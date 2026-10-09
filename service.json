@@ -1,9 +1,9 @@
 {
     "id": "faqs",
     "name": "Osmium FAQs",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Named lists of questions and answers managed in admin, for a theme to show anywhere, with FAQPage schema for search engines",
-    "category": "developer",
+    "category": "content",
     "author": {
         "name": "Gavin Cox"
     },
