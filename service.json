@@ -1,0 +1,62 @@
+{
+    "id": "faqs",
+    "name": "Osmium FAQs",
+    "version": "1.0.0",
+    "description": "Named lists of questions and answers managed in admin, for a theme to show anywhere, with FAQPage schema for search engines",
+    "category": "developer",
+    "author": {
+        "name": "Gavin Cox"
+    },
+    "license": "proprietary",
+
+    "requires": {
+        "osmium": ">=1.0.0",
+        "php": ">=8.1",
+        "services": []
+    },
+
+    "autoload": [
+        "models"
+    ],
+
+    "migrations": "migrations/",
+
+    "admin": {
+        "menu": {
+            "section": "Content",
+            "items": [
+                {
+                    "id": "faqs",
+                    "label": "FAQs",
+                    "icon": "bx bx-help-circle",
+                    "route": "admin/faqs",
+                    "activePattern": "admin/faqs*",
+                    "role": null
+                }
+            ]
+        },
+        "routes": {
+            "admin/faqs": {
+                "controller": "controllers/FaqsController.php",
+                "class": "Osmium\\Services\\Faqs\\Controllers\\FaqsController",
+                "method": "index",
+                "title": "FAQs"
+            },
+            "admin/faqs/edit": {
+                "controller": "controllers/FaqsController.php",
+                "class": "Osmium\\Services\\Faqs\\Controllers\\FaqsController",
+                "method": "edit",
+                "title": "Edit FAQ List"
+            },
+            "admin/faqs/action": {
+                "controller": "controllers/FaqsController.php",
+                "class": "Osmium\\Services\\Faqs\\Controllers\\FaqsController",
+                "method": "action"
+            }
+        }
+    },
+
+    "setup": {
+        "postInstallNote": "Create a list under Content > FAQs, then show it from a theme controller: $faqs = new \\Osmium\\Services\\Faqs\\Models\\Faqs($this->osmium->dataSource); $items = $faqs->items('your-slug'); The theme writes the markup; echo \\Osmium\\Services\\Faqs\\Models\\FaqSchema::script($items) in the page head or body for FAQPage structured data. Each edit page shows the snippet for its own list."
+    }
+}

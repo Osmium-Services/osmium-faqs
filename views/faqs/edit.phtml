@@ -1,0 +1,106 @@
+<?php $faqList = $admin['faqList']; ?>
+<div class="d-flex justify-content-between align-items-center py-3 mb-4">
+    <h4 class="mb-0">
+        <span class="text-muted fw-light">Content / FAQs /</span> <?= $faqList['id'] ? 'Edit List' : 'New List' ?>
+    </h4>
+    <a href="<?= $adminUrl('faqs/') ?>" class="btn btn-label-secondary">
+        <i class="bx bx-arrow-back me-1"></i> All lists
+    </a>
+</div>
+
+<div id="faqResult" class="alert d-none"></div>
+
+<form id="faqForm" autocomplete="off">
+    <input type="hidden" id="faqId" value="<?= (int) $faqList['id'] ?>">
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">Questions</h6>
+                    <button type="button" class="btn btn-sm btn-label-primary" id="faqAddButton">
+                        <i class="bx bx-plus me-1"></i> Add question
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="faqItems">
+                        <?php foreach ($admin['faqItems'] as $item): ?>
+                            <div class="border rounded p-3 mb-3" data-faq-item data-id="<?= (int) $item['id'] ?>">
+                                <div class="d-flex gap-2 mb-2">
+                                    <input type="text" class="form-control" data-field="question" maxlength="500"
+                                        placeholder="Question" value="<?= \htmlspecialchars($item['question']) ?>">
+                                    <button type="button" class="btn btn-icon btn-label-secondary" data-move="up" title="Move up"><i class="bx bx-chevron-up"></i></button>
+                                    <button type="button" class="btn btn-icon btn-label-secondary" data-move="down" title="Move down"><i class="bx bx-chevron-down"></i></button>
+                                    <button type="button" class="btn btn-icon btn-label-danger" data-remove title="Remove"><i class="bx bx-trash"></i></button>
+                                </div>
+                                <textarea class="form-control mb-2" data-field="answer" rows="4" placeholder="Answer"><?= \htmlspecialchars($item['answer']) ?></textarea>
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input" type="checkbox" data-field="published" <?= $item['isPublished'] ? 'checked' : '' ?>>
+                                    <label class="form-check-label">Shown on the site</label>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <p class="text-muted mb-0 <?= $admin['faqItems'] ? 'd-none' : '' ?>" id="faqEmpty">No questions yet. Use Add question to write the first.</p>
+                    <div class="form-text mt-2">Plain text. A blank line starts a new paragraph.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="faqName" class="form-label">List name</label>
+                        <input type="text" class="form-control" id="faqName" maxlength="150" required
+                            value="<?= \htmlspecialchars($faqList['name']) ?>">
+                    </div>
+                    <div class="mb-3">
+                        <label for="faqSlug" class="form-label">Slug</label>
+                        <input type="text" class="form-control" id="faqSlug" maxlength="100"
+                            value="<?= \htmlspecialchars($faqList['slug']) ?>">
+                        <div class="form-text">Lowercase letters, numbers and hyphens. A theme finds the list by this.</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100" id="faqSaveButton">Save</button>
+                </div>
+            </div>
+
+            <?php if ($faqList['id']): ?>
+                <div class="card mb-4">
+                    <div class="card-header"><h6 class="mb-0">Use it on the site</h6></div>
+                    <div class="card-body">
+                        <p class="small text-muted">In a theme controller:</p>
+                        <pre class="small mb-3"><code>$faqs = new \Osmium\Services\Faqs\Models\Faqs($this->osmium->dataSource);
+$items = $faqs->items('<?= \htmlspecialchars($faqList['slug']) ?>');</code></pre>
+                        <p class="small text-muted">Each item has <code>question</code>, <code>answer</code>, <code>answer_html</code> and <code>anchor</code>. For Google's FAQ markup, print this in the page:</p>
+                        <pre class="small mb-0"><code>echo \Osmium\Services\Faqs\Models\FaqSchema::script($items);</code></pre>
+                    </div>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</form>
+
+<template id="faqItemTemplate">
+    <div class="border rounded p-3 mb-3" data-faq-item data-id="0">
+        <div class="d-flex gap-2 mb-2">
+            <input type="text" class="form-control" data-field="question" maxlength="500" placeholder="Question">
+            <button type="button" class="btn btn-icon btn-label-secondary" data-move="up" title="Move up"><i class="bx bx-chevron-up"></i></button>
+            <button type="button" class="btn btn-icon btn-label-secondary" data-move="down" title="Move down"><i class="bx bx-chevron-down"></i></button>
+            <button type="button" class="btn btn-icon btn-label-danger" data-remove title="Remove"><i class="bx bx-trash"></i></button>
+        </div>
+        <textarea class="form-control mb-2" data-field="answer" rows="4" placeholder="Answer"></textarea>
+        <div class="form-check form-switch mb-0">
+            <input class="form-check-input" type="checkbox" data-field="published" checked>
+            <label class="form-check-label">Shown on the site</label>
+        </div>
+    </div>
+</template>
+
+<script>
+    window.FaqConfig = {
+        actionUrl: <?= \json_encode($adminUrl('faqs/action/')) ?>,
+        editUrl: <?= \json_encode($adminUrl('faqs/edit/')) ?>
+    };
+</script>
+<script src="/assets/services/faqs/faqs-edit.js<?= $adminAssetVersion('/assets/services/faqs/faqs-edit.js') ?>"></script>
