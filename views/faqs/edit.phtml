@@ -97,7 +97,7 @@ $items = $faqs->items('<?= \htmlspecialchars($faqList['slug']) ?>');</code></pre
     </div>
 </template>
 
-<script>
+<script nonce="<?= $cspNonce ?? '' ?>">
     window.FaqConfig = {
         actionUrl: <?= \json_encode($adminUrl('faqs/action/')) ?>,
         editUrl: <?= \json_encode($adminUrl('faqs/edit/')) ?>

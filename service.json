@@ -1,7 +1,7 @@
 {
     "id": "osmium-faqs",
     "name": "Osmium FAQs",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "description": "Named lists of questions and answers managed in admin, for a theme to show anywhere, with FAQPage schema for search engines",
     "category": "content",
     "author": {
