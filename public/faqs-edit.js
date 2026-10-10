@@ -98,12 +98,9 @@
                 return;
             }
 
-            const wasNew = !Number(idInput.value);
-            if (wasNew) {
-                window.location.href = config.editUrl + '?id=' + data.id;
-                return;
-            }
-            window.location.reload();
+            // Go to the list by id rather than reloading: core strips the query string from this page's address
+            // (it is stashed in the session and cleared on load), so a reload would open a blank "New List"
+            window.location.href = config.editUrl + '?id=' + data.id;
         } catch (error) {
             console.error('Save error:', error);
             showResult('Could not save the list.', 'danger');
