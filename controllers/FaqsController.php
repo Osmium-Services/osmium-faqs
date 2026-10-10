@@ -21,7 +21,6 @@ use Osmium\Services\Faqs\Models\FaqText;
 class FaqsController extends AdminController
 {
     private const RECORD_TYPE = 'faq_list';
-    private const MAX_ANSWER_LENGTH = 10000;
 
     public function index(): void
     {
@@ -211,22 +210,12 @@ class FaqsController extends AdminController
         $isBlank = $question === '' && $answer === '';
         if ($isBlank) return null;
 
-        $questionMissing = $question === '';
-        if ($questionMissing) throw new \InvalidArgumentException('Every answer needs a question');
-
-        $answerMissing = $answer === '';
-        if ($answerMissing) throw new \InvalidArgumentException('Every question needs an answer: ' . $question);
-
-        $questionTooLong = \mb_strlen($question) > 500;
-        if ($questionTooLong) throw new \InvalidArgumentException('A question can be up to 500 characters');
-
-        $answerTooLong = \mb_strlen($answer) > self::MAX_ANSWER_LENGTH;
-        if ($answerTooLong) throw new \InvalidArgumentException('An answer can be up to 10,000 characters');
+        $pair = FaqText::cleanPair($question, $answer);
 
         return [
             'id' => (int) ($raw['id'] ?? 0),
-            'question' => $question,
-            'answer' => $answer,
+            'question' => $pair['question'],
+            'answer' => $pair['answer'],
             'is_published' => !empty($raw['is_published']),
         ];
     }

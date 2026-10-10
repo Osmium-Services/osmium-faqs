@@ -9,8 +9,10 @@ use Osmium\Modules\Admin\Models\Changelog;
 
 /**
  * The FAQs' tools for the /mcp endpoint, offered through core's `mcp.tools` hook: list FAQ lists, and soft delete
- * or restore one. Delete and restore reuse FaqBin, so they behave exactly like the admin screen. There is no
- * permanent delete, and no tool returns question or answer text.
+ * or restore one, and add a question to a list. Delete and restore reuse FaqBin, so they behave exactly like the
+ * admin screen, and a new question is checked by the same FaqText::cleanPair rules. A question added here is always
+ * hidden: someone publishes it in the admin. There is no permanent delete, no editing or removing of questions,
+ * and no tool returns question or answer text.
  */
 class FaqMcp
 {
@@ -44,6 +46,20 @@ class FaqMcp
                 'inputSchema' => $idAndName,
                 'write' => true,
                 'handler' => self::class . '::delete',
+            ],
+            [
+                'name' => 'faq_question_add',
+                'description' => 'Add a question and answer to the end of a FAQ list. It is saved hidden ("Shown on the site" unticked), so nothing goes live until someone ticks it in the admin. Answers are plain text; a blank line starts a new paragraph. Questions can be up to 500 characters and answers up to 10,000.',
+                'inputSchema' => [
+                    'type' => 'object',
+                    'properties' => $idAndName['properties'] + [
+                        'question' => ['type' => 'string', 'description' => 'The question, up to 500 characters'],
+                        'answer' => ['type' => 'string', 'description' => 'The answer as plain text, up to 10,000 characters'],
+                    ],
+                    'required' => ['id', 'expected_name', 'question', 'answer'],
+                ],
+                'write' => true,
+                'handler' => self::class . '::addQuestion',
             ],
             [
                 'name' => 'faq_list_restore',
@@ -126,6 +142,41 @@ class FaqMcp
     }
 
     /**
+     * @param array<string, mixed> $call
+     * @return array<string, mixed>
+     */
+    public static function addQuestion(array $call): array
+    {
+        $arguments = $call['arguments'] ?? [];
+        [$id, $expectedName] = self::idAndName($arguments);
+        $lists = new FaqList($call['dataSource']);
+        $list = $lists->getById($id);
+        self::requireName($list, isDeleted: false, expectedName: $expectedName, id: $id);
+
+        try {
+            $pair = FaqText::cleanPair((string) ($arguments['question'] ?? ''), (string) ($arguments['answer'] ?? ''));
+        } catch (\InvalidArgumentException $e) {
+            throw new McpToolException($e->getMessage());
+        }
+
+        $questionId = (new FaqItem($call['dataSource']))->append($id, $pair['question'], $pair['answer'], isPublished: false);
+        self::changelog($call)->log(
+            description: 'Added a hidden question to FAQ list ' . $list['name'],
+            recordType: self::RECORD_TYPE,
+            recordId: $id,
+        );
+
+        return [
+            'added' => true,
+            'list_id' => $id,
+            'list' => (string) $list['name'],
+            'question_id' => $questionId,
+            'shown_on_site' => false,
+            'next_step' => 'Open the list in the admin (FAQs) and tick "Shown on the site" for this question to publish it, or leave it hidden.',
+        ];
+    }
+
+    /**
      * @param array<string, mixed> $arguments
      * @return array{0: int, 1: string}
      */
@@ -155,10 +206,18 @@ class FaqMcp
     }
 
     /** @param array<string, mixed> $call */
-    private static function bin(array $call, FaqList $lists): FaqBin
+    private static function changelog(array $call): Changelog
     {
         $changelog = new Changelog($call['dataSource'], 'changelog');
         $changelog->setGetUser(fn(): array => ['username' => $call['actor']]);
+
+        return $changelog;
+    }
+
+    /** @param array<string, mixed> $call */
+    private static function bin(array $call, FaqList $lists): FaqBin
+    {
+        $changelog = self::changelog($call);
 
         $log = fn(string $action, int $id, string $name) => $changelog->log(
             description: $action . ': FAQ list ' . $name,

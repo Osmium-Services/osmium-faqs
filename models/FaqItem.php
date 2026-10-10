@@ -51,6 +51,19 @@ class FaqItem extends Model
         return (int) $this->database->lastInsertId();
     }
 
+    /**
+     * Adds a question at the end of a list, hidden unless told otherwise
+     */
+    public function append(int $listId, string $question, string $answer, bool $isPublished = false): int
+    {
+        $this->database->query($this->loadSqlFile('faq-item-next-sort.sql'));
+        $this->database->bind(param: ':list_id', value: $listId);
+        $row = $this->database->single();
+        $sortOrder = (int) ($row['next_sort'] ?? 0);
+
+        return $this->insert(listId: $listId, question: $question, answer: $answer, sortOrder: $sortOrder, isPublished: $isPublished);
+    }
+
     public function update(
         int $id,
         int $listId,
