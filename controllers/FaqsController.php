@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Osmium\Services\Faqs\Controllers;
 
 use Osmium\Modules\Admin\Core\AdminController;
+use Osmium\Services\Faqs\Models\FaqBin;
 use Osmium\Services\Faqs\Models\FaqItem;
 use Osmium\Services\Faqs\Models\FaqList;
 use Osmium\Services\Faqs\Models\FaqText;
@@ -235,28 +236,21 @@ class FaqsController extends AdminController
      */
     private function deleteList(int $id): array
     {
-        $lists = new FaqList($this->osmium->dataSource);
-        $list = $lists->getById($id);
-        $isLive = $list && $list['deleted_at'] === null;
-        if (!$isLive) throw new \InvalidArgumentException('List not found');
-
-        $lists->softDelete($id);
-        $this->logChange(action: 'Deleted', id: $id, name: (string) $list['name']);
+        $this->bin()->delete($id);
 
         return ['success' => true];
     }
 
     private function restoreList(int $id): array
     {
-        $lists = new FaqList($this->osmium->dataSource);
-        $list = $lists->getById($id);
-        $isDeleted = $list && $list['deleted_at'] !== null;
-        if (!$isDeleted) throw new \InvalidArgumentException('Deleted list not found');
-
-        $lists->restore($id);
-        $this->logChange(action: 'Restored', id: $id, name: (string) $list['name']);
+        $this->bin()->restore($id);
 
         return ['success' => true];
+    }
+
+    private function bin(): FaqBin
+    {
+        return new FaqBin(new FaqList($this->osmium->dataSource), $this->logChange(...));
     }
 
     /**
