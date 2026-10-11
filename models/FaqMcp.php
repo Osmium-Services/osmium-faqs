@@ -9,11 +9,12 @@ use Osmium\Modules\Admin\Models\Changelog;
 
 /**
  * The FAQs' tools for the /mcp endpoint, offered through core's `mcp.tools` hook: list FAQ lists, read the questions
- * in one, and soft delete or restore a list, and add a question to a list. Delete and restore reuse FaqBin, so they
- * behave exactly like the admin screen, and a new question is checked by the same FaqText::cleanPair rules. A
- * question added here is always hidden: someone publishes it in the admin. There is no permanent delete and no
- * editing or removing of questions. Reading the questions is the only tool that returns question and answer text,
- * and it is read-only.
+ * in one, soft delete or restore a list, add a question to a list, and change the wording of one. Delete and restore
+ * reuse FaqBin, so they behave exactly like the admin screen, and new or changed wording is checked by the same
+ * FaqText::cleanPair rules. A question added here is always hidden: someone publishes it in the admin. Changing a
+ * question keeps its place and whether it is shown, so it cannot show or hide anything. There is no permanent
+ * delete and no removing or reordering of questions. Reading the questions is the only tool that returns
+ * question and answer text, and it is read-only.
  */
 class FaqMcp
 {
@@ -67,6 +68,22 @@ class FaqMcp
                 ],
                 'write' => true,
                 'handler' => self::class . '::addQuestion',
+            ],
+            [
+                'name' => 'faq_question_update',
+                'description' => 'Change the wording of one question in a FAQ list. It keeps its place and stays shown or hidden as it was, so a shown question changes on the site straight away. Give the question id from faq_questions_list and its current question text, which must match. Answers are plain text; a blank line starts a new paragraph.',
+                'inputSchema' => [
+                    'type' => 'object',
+                    'properties' => $idAndName['properties'] + [
+                        'question_id' => ['type' => 'integer', 'description' => 'The question id from faq_questions_list'],
+                        'expected_question' => ['type' => 'string', 'description' => "The question's current text, exactly as listed. The call is refused if it does not match the id"],
+                        'question' => ['type' => 'string', 'description' => 'The new question, up to 500 characters'],
+                        'answer' => ['type' => 'string', 'description' => 'The new answer as plain text, up to 10,000 characters'],
+                    ],
+                    'required' => ['id', 'expected_name', 'question_id', 'expected_question', 'question', 'answer'],
+                ],
+                'write' => true,
+                'handler' => self::class . '::updateQuestion',
             ],
             [
                 'name' => 'faq_list_restore',
@@ -215,6 +232,73 @@ class FaqMcp
             'shown_on_site' => false,
             'next_step' => 'Open the list in the admin (FAQs) and tick "Shown on the site" for this question to publish it, or leave it hidden.',
         ];
+    }
+
+    /**
+     * @param array<string, mixed> $call
+     * @return array<string, mixed>
+     */
+    public static function updateQuestion(array $call): array
+    {
+        $arguments = $call['arguments'] ?? [];
+        [$id, $expectedName] = self::idAndName($arguments);
+        $lists = new FaqList($call['dataSource']);
+        $list = $lists->getById($id);
+        self::requireName($list, isDeleted: false, expectedName: $expectedName, id: $id);
+
+        $questionId = $arguments['question_id'] ?? null;
+        $expectedQuestion = \trim((string) ($arguments['expected_question'] ?? ''));
+        $valid = \is_int($questionId) && $questionId > 0 && $expectedQuestion !== '';
+        if (!$valid) throw new McpToolException('Give the question_id (a whole number) and its exact expected_question.');
+
+        $items = new FaqItem($call['dataSource']);
+        $existing = self::findQuestion($items->forList($id), $questionId);
+        if ($existing === null) throw new McpToolException("No question {$questionId} in list {$id}. Check faq_questions_list.");
+        if (\trim((string) $existing['question']) !== $expectedQuestion) {
+            throw new McpToolException("The question text does not match question {$questionId}. Check faq_questions_list and try again.");
+        }
+
+        try {
+            $pair = FaqText::cleanPair((string) ($arguments['question'] ?? ''), (string) ($arguments['answer'] ?? ''));
+        } catch (\InvalidArgumentException $e) {
+            throw new McpToolException($e->getMessage());
+        }
+
+        $items->update(
+            id: $questionId,
+            listId: $id,
+            question: $pair['question'],
+            answer: $pair['answer'],
+            sortOrder: (int) $existing['sort_order'],
+            isPublished: (bool) $existing['is_published'],
+        );
+        self::changelog($call)->log(
+            description: 'Edited a question in FAQ list ' . $list['name'],
+            recordType: self::RECORD_TYPE,
+            recordId: $id,
+        );
+
+        return [
+            'updated' => true,
+            'list_id' => $id,
+            'list' => (string) $list['name'],
+            'question_id' => $questionId,
+            'shown_on_site' => (bool) $existing['is_published'],
+            'undo' => 'faq_question_update again with the old wording from faq_questions_list, which you have just read',
+        ];
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $rows from faq-item-list.sql
+     * @return array<string, mixed>|null
+     */
+    private static function findQuestion(array $rows, int $questionId): ?array
+    {
+        foreach ($rows as $row) {
+            if ((int) $row['id'] === $questionId) return $row;
+        }
+
+        return null;
     }
 
     /**
