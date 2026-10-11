@@ -53,6 +53,7 @@ class FaqMcp
                 'description' => 'Move a FAQ list to the bin (a soft delete: the list and its questions stay). Undo with faq_list_restore.',
                 'inputSchema' => $idAndName,
                 'write' => true,
+                'destructive' => true,
                 'handler' => self::class . '::delete',
             ],
             [
@@ -83,6 +84,7 @@ class FaqMcp
                     'required' => ['id', 'expected_name', 'question_id', 'expected_question', 'question', 'answer'],
                 ],
                 'write' => true,
+                'destructive' => true,
                 'handler' => self::class . '::updateQuestion',
             ],
             [
