@@ -8,11 +8,12 @@ use Osmium\Core\Library\McpToolException;
 use Osmium\Modules\Admin\Models\Changelog;
 
 /**
- * The FAQs' tools for the /mcp endpoint, offered through core's `mcp.tools` hook: list FAQ lists, and soft delete
- * or restore one, and add a question to a list. Delete and restore reuse FaqBin, so they behave exactly like the
- * admin screen, and a new question is checked by the same FaqText::cleanPair rules. A question added here is always
- * hidden: someone publishes it in the admin. There is no permanent delete, no editing or removing of questions,
- * and no tool returns question or answer text.
+ * The FAQs' tools for the /mcp endpoint, offered through core's `mcp.tools` hook: list FAQ lists, read the questions
+ * in one, and soft delete or restore a list, and add a question to a list. Delete and restore reuse FaqBin, so they
+ * behave exactly like the admin screen, and a new question is checked by the same FaqText::cleanPair rules. A
+ * question added here is always hidden: someone publishes it in the admin. There is no permanent delete and no
+ * editing or removing of questions. Reading the questions is the only tool that returns question and answer text,
+ * and it is read-only.
  */
 class FaqMcp
 {
@@ -39,6 +40,12 @@ class FaqMcp
                 'description' => 'FAQ lists with id, name, slug, number of questions and last updated date. Set deleted to true to list the lists in the bin instead.',
                 'inputSchema' => ['type' => 'object', 'properties' => ['deleted' => ['type' => 'boolean', 'description' => 'List deleted lists (the bin)']]],
                 'handler' => self::class . '::listLists',
+            ],
+            [
+                'name' => 'faq_questions_list',
+                'description' => 'The questions and answers in one FAQ list, in order, each with its id and whether it is shown on the site or hidden. Read-only.',
+                'inputSchema' => $idAndName,
+                'handler' => self::class . '::questionsList',
             ],
             [
                 'name' => 'faq_list_delete',
@@ -101,6 +108,40 @@ class FaqMcp
         }
 
         return $lists;
+    }
+
+    /**
+     * @param array<string, mixed> $call
+     * @return array<string, mixed>
+     */
+    public static function questionsList(array $call): array
+    {
+        [$id, $expectedName] = self::idAndName($call['arguments'] ?? []);
+        $list = (new FaqList($call['dataSource']))->getById($id);
+        self::requireName($list, isDeleted: false, expectedName: $expectedName, id: $id);
+
+        $rows = (new FaqItem($call['dataSource']))->forList($id);
+
+        return ['list_id' => $id, 'list' => (string) $list['name'], 'total' => \count($rows), 'questions' => self::shapeQuestions($rows)];
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $rows from faq-item-list.sql
+     * @return array<int, array<string, mixed>>
+     */
+    public static function shapeQuestions(array $rows): array
+    {
+        $questions = [];
+        foreach ($rows as $row) {
+            $questions[] = [
+                'id' => (int) $row['id'],
+                'question' => (string) $row['question'],
+                'answer' => (string) $row['answer'],
+                'shown_on_site' => (bool) $row['is_published'],
+            ];
+        }
+
+        return $questions;
     }
 
     /**
