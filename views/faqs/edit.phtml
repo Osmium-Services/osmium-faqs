@@ -42,7 +42,7 @@
                         <?php endforeach; ?>
                     </div>
                     <p class="text-muted mb-0 <?= $admin['faqItems'] ? 'd-none' : '' ?>" id="faqEmpty">No questions yet. Use Add question to write the first.</p>
-                    <div class="form-text mt-2">Plain text. A blank line starts a new paragraph.</div>
+                    <div class="form-text mt-2">Answers can have bold, italic, lists and links. Questions are plain text.</div>
                 </div>
             </div>
         </div>
@@ -72,7 +72,7 @@
                         <p class="small text-muted">In a theme controller:</p>
                         <pre class="small mb-3"><code>$faqs = new \Osmium\Services\Faqs\Models\Faqs($this->osmium->dataSource);
 $items = $faqs->items('<?= \htmlspecialchars($faqList['slug']) ?>');</code></pre>
-                        <p class="small text-muted">Each item has <code>question</code>, <code>answer</code>, <code>answer_html</code> and <code>anchor</code>. For Google's FAQ markup, print this in the page:</p>
+                        <p class="small text-muted">Each item has <code>question</code>, <code>answer</code> (plain text), <code>answer_html</code> (safe HTML, print it as it is) and <code>anchor</code>. For Google's FAQ markup, print this in the page:</p>
                         <pre class="small mb-0"><code>echo \Osmium\Services\Faqs\Models\FaqSchema::script($items);</code></pre>
                     </div>
                 </div>

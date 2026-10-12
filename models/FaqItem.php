@@ -41,11 +41,11 @@ class FaqItem extends Model
         return $this->database->resultset();
     }
 
-    public function insert(int $listId, string $question, string $answer, int $sortOrder, bool $isPublished): int
+    public function insert(int $listId, string $question, string $answer, int $sortOrder, bool $isPublished, bool $isHtml = false): int
     {
         $this->database->query($this->loadSqlFile('faq-item-insert.sql'));
         $this->database->bind(param: ':list_id', value: $listId);
-        $this->bindDetails(question: $question, answer: $answer, sortOrder: $sortOrder, isPublished: $isPublished);
+        $this->bindDetails(question: $question, answer: $answer, sortOrder: $sortOrder, isPublished: $isPublished, isHtml: $isHtml);
         $this->database->execute();
 
         return (int) $this->database->lastInsertId();
@@ -71,11 +71,12 @@ class FaqItem extends Model
         string $answer,
         int $sortOrder,
         bool $isPublished,
+        bool $isHtml = false,
     ): void {
         $this->database->query($this->loadSqlFile('faq-item-update.sql'));
         $this->database->bind(param: ':id', value: $id);
         $this->database->bind(param: ':list_id', value: $listId);
-        $this->bindDetails(question: $question, answer: $answer, sortOrder: $sortOrder, isPublished: $isPublished);
+        $this->bindDetails(question: $question, answer: $answer, sortOrder: $sortOrder, isPublished: $isPublished, isHtml: $isHtml);
         $this->database->execute();
     }
 
@@ -94,10 +95,11 @@ class FaqItem extends Model
         $this->database->execute();
     }
 
-    private function bindDetails(string $question, string $answer, int $sortOrder, bool $isPublished): void
+    private function bindDetails(string $question, string $answer, int $sortOrder, bool $isPublished, bool $isHtml = false): void
     {
         $this->database->bind(param: ':question', value: $question);
         $this->database->bind(param: ':answer', value: $answer);
+        $this->database->bind(param: ':is_html', value: $isHtml ? 1 : 0);
         $this->database->bind(param: ':sort_order', value: $sortOrder);
         $this->database->bind(param: ':is_published', value: $isPublished ? 1 : 0);
     }

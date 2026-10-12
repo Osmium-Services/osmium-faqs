@@ -22,7 +22,7 @@ class FaqSchema
             $questions[] = [
                 '@type' => 'Question',
                 'name' => (string) $item['question'],
-                'acceptedAnswer' => ['@type' => 'Answer', 'text' => FaqText::html((string) $item['answer'])],
+                'acceptedAnswer' => ['@type' => 'Answer', 'text' => (string) ($item['answer_html'] ?? FaqText::html((string) $item['answer']))],
             ];
         }
 

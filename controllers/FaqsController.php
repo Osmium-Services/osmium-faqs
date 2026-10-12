@@ -8,6 +8,7 @@ use Osmium\Modules\Admin\Core\AdminController;
 use Osmium\Services\Faqs\Models\FaqBin;
 use Osmium\Services\Faqs\Models\FaqItem;
 use Osmium\Services\Faqs\Models\FaqList;
+use Osmium\Services\Faqs\Models\FaqHtml;
 use Osmium\Services\Faqs\Models\FaqText;
 
 /**
@@ -169,6 +170,7 @@ class FaqsController extends AdminController
                 answer: $item['answer'],
                 sortOrder: $position,
                 isPublished: $item['is_published'],
+                isHtml: true,
             );
         }
 
@@ -179,6 +181,7 @@ class FaqsController extends AdminController
             answer: $item['answer'],
             sortOrder: $position,
             isPublished: $item['is_published'],
+            isHtml: true,
         );
 
         return $item['id'];
@@ -206,8 +209,8 @@ class FaqsController extends AdminController
     private function cleanItem(array $raw): ?array
     {
         $question = \trim((string) ($raw['question'] ?? ''));
-        $answer = \trim((string) ($raw['answer'] ?? ''));
-        $isBlank = $question === '' && $answer === '';
+        $answer = FaqHtml::clean((string) ($raw['answer'] ?? '')); // The editor sends HTML: only the allowed tags are kept
+        $isBlank = $question === '' && FaqHtml::toText($answer) === '';
         if ($isBlank) return null;
 
         $pair = FaqText::cleanPair($question, $answer);
@@ -284,7 +287,7 @@ class FaqsController extends AdminController
         return [
             'id' => (int) $item['id'],
             'question' => (string) $item['question'],
-            'answer' => (string) $item['answer'],
+            'answer' => FaqHtml::render((string) $item['answer'], (bool) ($item['is_html'] ?? false)), // What the editor shows, as safe HTML
             'isPublished' => (bool) $item['is_published'],
         ];
     }

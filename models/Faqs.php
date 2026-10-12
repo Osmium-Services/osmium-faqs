@@ -12,8 +12,8 @@ use Osmium\Core\Library\OsmiumPDO;
  *     $faqs = new \Osmium\Services\Faqs\Models\Faqs($this->osmium->dataSource);
  *     $items = $faqs->items('delivery');
  *
- * Each item is an array with id, anchor (a safe element id), question, answer (plain text, as typed) and
- * answer_html (the answer escaped, blank-line paragraphs as <p>, single line breaks as <br>), so a theme can print
+ * Each item is an array with id, anchor (a safe element id), question, answer (the answer as plain text) and
+ * answer_html (the answer as safe HTML: paragraphs, line breaks, bold, italic, lists and links), so a theme can print
  * either. An unknown or deleted list gives an empty array.
  */
 class Faqs
@@ -36,8 +36,8 @@ class Faqs
                 'id' => (int) $row['id'],
                 'anchor' => 'faq-' . (int) $row['id'],
                 'question' => (string) $row['question'],
-                'answer' => (string) $row['answer'],
-                'answer_html' => FaqText::html((string) $row['answer']),
+                'answer' => FaqHtml::plain((string) $row['answer'], (bool) ($row['is_html'] ?? false)),
+                'answer_html' => FaqHtml::render((string) $row['answer'], (bool) ($row['is_html'] ?? false)),
             ];
         }
 

@@ -63,7 +63,7 @@ class FaqMcp
                     'type' => 'object',
                     'properties' => $idAndName['properties'] + [
                         'question' => ['type' => 'string', 'description' => 'The question, up to 500 characters'],
-                        'answer' => ['type' => 'string', 'description' => 'The answer as plain text, up to 10,000 characters'],
+                        'answer' => ['type' => 'string', 'description' => 'The answer as plain text, up to 10,000 characters. Formatting and links are written in the admin editor'],
                     ],
                     'required' => ['id', 'expected_name', 'question', 'answer'],
                 ],
@@ -79,7 +79,7 @@ class FaqMcp
                         'question_id' => ['type' => 'integer', 'description' => 'The question id from faq_questions_list'],
                         'expected_question' => ['type' => 'string', 'description' => "The question's current text, exactly as listed. The call is refused if it does not match the id"],
                         'question' => ['type' => 'string', 'description' => 'The new question, up to 500 characters'],
-                        'answer' => ['type' => 'string', 'description' => 'The new answer as plain text, up to 10,000 characters'],
+                        'answer' => ['type' => 'string', 'description' => 'The new answer as plain text, up to 10,000 characters. Saving it here replaces any formatting or links the answer had'],
                     ],
                     'required' => ['id', 'expected_name', 'question_id', 'expected_question', 'question', 'answer'],
                 ],
@@ -155,7 +155,7 @@ class FaqMcp
             $questions[] = [
                 'id' => (int) $row['id'],
                 'question' => (string) $row['question'],
-                'answer' => (string) $row['answer'],
+                'answer' => FaqHtml::plain((string) $row['answer'], (bool) ($row['is_html'] ?? false)),
                 'shown_on_site' => (bool) $row['is_published'],
             ];
         }

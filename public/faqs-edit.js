@@ -18,6 +18,32 @@
     const slugInput = document.getElementById('faqSlug');
     const idInput = document.getElementById('faqId');
 
+    // Answers are written in Summernote (loaded by the admin). Only a few tools: the server keeps just those tags anyway.
+    const purifyConfig = { ALLOWED_TAGS: ['p', 'br', 'strong', 'b', 'em', 'i', 'ul', 'ol', 'li', 'a'], ALLOWED_ATTR: ['href'] };
+
+    function initEditor(block) {
+        const field = block.querySelector('[data-field="answer"]');
+        $(field).summernote({
+            height: 150,
+            placeholder: 'Answer',
+            disableDragAndDrop: true,
+            toolbar: [
+                ['style', ['bold', 'italic']],
+                ['para', ['ul', 'ol']],
+                ['insert', ['link']],
+                ['view', ['codeview']]
+            ],
+            popover: { link: [['link', ['linkDialogShow', 'unlink']]] }
+        });
+    }
+
+    function readAnswer(block) {
+        const html = $(block.querySelector('[data-field="answer"]')).summernote('code');
+        return DOMPurify.sanitize(html, purifyConfig);
+    }
+
+    container.querySelectorAll('[data-faq-item]').forEach(initEditor);
+
     function refreshEmptyNote() {
         emptyNote.classList.toggle('d-none', container.children.length > 0);
     }
@@ -33,7 +59,7 @@
             return {
                 id: Number(block.dataset.id) || 0,
                 question: block.querySelector('[data-field="question"]').value,
-                answer: block.querySelector('[data-field="answer"]').value,
+                answer: readAnswer(block),
                 is_published: block.querySelector('[data-field="published"]').checked
             };
         });
@@ -42,6 +68,7 @@
     document.getElementById('faqAddButton').addEventListener('click', function () {
         const block = template.content.firstElementChild.cloneNode(true);
         container.appendChild(block);
+        initEditor(block);
         refreshEmptyNote();
         block.querySelector('[data-field="question"]').focus();
     });
@@ -51,6 +78,7 @@
         if (!block) return;
 
         if (event.target.closest('[data-remove]')) {
+            $(block.querySelector('[data-field="answer"]')).summernote('destroy');
             block.remove();
             refreshEmptyNote();
             return;
