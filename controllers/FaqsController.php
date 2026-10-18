@@ -25,7 +25,6 @@ class FaqsController extends AdminController
 
     public function index(): void
     {
-        require_once 'app/admin/core/ListView.php';
 
         $lists = new FaqList($this->osmium->dataSource);
 
