@@ -8,6 +8,32 @@ use Osmium\Modules\Admin\Core\ListView;
  * FAQ lists, rendered by Osmium\Modules\Admin\Core\ListView. Rows are shaped by FaqsController::formatList().
  */
 return [
+    'recent' => [
+        'id' => 'faq-lists-recent',
+        'title' => 'Recent Changes',
+        'noun' => ['list', 'lists'],
+        'icon' => 'bx-time-five',
+        'endpoint' => 'faqs/action/',
+        'datatable' => false,
+        'collapsible' => ['label' => 'Recent Changes ({count})'],
+        'hideWhenEmpty' => false,
+        'columns' => [
+            [
+                'key' => 'name',
+                'label' => 'List',
+                'type' => 'text',
+                'strong' => true,
+                'fill' => true,
+                'sub' => ['key' => 'slug', 'style' => 'plain'],
+            ],
+            ['key' => 'count_label', 'label' => 'Questions', 'type' => 'text', 'nowrap' => true],
+            ['key' => 'updated_label', 'label' => 'Updated', 'type' => 'text', 'small' => true, 'nowrap' => true],
+        ],
+        'actions' => [
+            ['label' => 'Edit', 'icon' => 'bx-edit-alt', 'url' => '{edit_url}'],
+        ],
+    ],
+
     'lists' => [
         'id' => 'faq-lists',
         'title' => 'FAQ Lists',
@@ -45,6 +71,7 @@ return [
             'title' => 'Deleted Lists',
             'noun' => ['list', 'lists'],
             'endpoint' => 'faqs/action/',
+            'hideWhenEmpty' => false,
             'columns' => [
                 [
                     'key' => 'name',

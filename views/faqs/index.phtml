@@ -19,6 +19,7 @@ $listContext = [
     </a>
 </div>
 
+<?= ListView::render($admin['lists']['recent'], $admin['recentFaqLists'], $listContext) ?>
 <?= ListView::render($admin['lists']['lists'], $admin['faqLists'], $listContext) ?>
 <?= ListView::render($admin['lists']['deleted'], $admin['deletedFaqLists'], $listContext) ?>
 

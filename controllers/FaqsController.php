@@ -30,6 +30,7 @@ class FaqsController extends AdminController
 
         $this->data['admin']['isAdmin'] = $this->isAdmin();
         $this->data['admin']['faqLists'] = \array_map($this->formatList(...), $lists->listAll());
+        $this->data['admin']['recentFaqLists'] = \array_map($this->formatRecentList(...), $lists->listRecent());
         $this->data['admin']['deletedFaqLists'] = \array_map($this->formatList(...), $lists->listDeleted());
         $this->data['admin']['lists'] = require __DIR__ . '/../lists/faq-lists.php';
 
@@ -279,6 +280,13 @@ class FaqsController extends AdminController
             'date_label' => $updated ? \date('j M Y', \strtotime($updated)) : '',
             'date_sort' => (string) $updated,
         ];
+    }
+
+    private function formatRecentList(array $list): array
+    {
+        $changed = $list['updated_at'] ?? $list['created_at'];
+
+        return $this->formatList($list) + ['updated_label' => \date('j M Y, g:ia', \strtotime((string) $changed))];
     }
 
     private function formatItem(array $item): array

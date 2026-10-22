@@ -30,6 +30,16 @@ class FaqList extends Model
     }
 
     /**
+     * Lists created or changed in the last 24 hours, newest change first, capped at 10
+     */
+    public function listRecent(): array
+    {
+        $this->database->query($this->loadSqlFile('faq-list-list-recent.sql'));
+
+        return $this->database->resultset();
+    }
+
+    /**
      * Every list in the bin with its question count, most recently deleted first
      */
     public function listDeleted(): array
