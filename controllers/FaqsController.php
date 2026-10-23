@@ -53,8 +53,17 @@ class FaqsController extends AdminController
             'slug' => $list['slug'] ?? '',
         ];
         $this->data['admin']['faqItems'] = \array_map($this->formatItem(...), $items);
+        $this->data['admin']['showSavedMessage'] = $this->consumeSavedFlag();
 
         $this->setView('faqs/edit.phtml');
+    }
+
+    private function consumeSavedFlag(): bool
+    {
+        $wasSaved = isset($_SESSION['faq_saved']);
+        unset($_SESSION['faq_saved']);
+
+        return $wasSaved;
     }
 
     public function action()
@@ -123,6 +132,7 @@ class FaqsController extends AdminController
         }
 
         $this->logChange(action: $existing ? 'Updated' : 'Created', id: $id, name: $name);
+        $_SESSION['faq_saved'] = true;
 
         return ['success' => true, 'id' => $id];
     }
@@ -284,7 +294,7 @@ class FaqsController extends AdminController
 
     private function formatRecentList(array $list): array
     {
-        $changed = $list['updated_at'] ?? $list['created_at'];
+        $changed = \max($list['updated_at'] ?? '', $list['deleted_at'] ?? '', $list['created_at']);
 
         return $this->formatList($list) + ['updated_label' => \date('j M Y, g:ia', \strtotime((string) $changed))];
     }
