@@ -1,7 +1,7 @@
 {
     "id": "osmium-faqs",
     "name": "Osmium FAQs",
-    "version": "1.6.0",
+    "version": "1.7.0",
     "description": "Named lists of questions and answers managed in admin, for a theme to show anywhere, with FAQPage schema for search engines",
     "category": "content",
     "author": {
@@ -20,6 +20,12 @@
     ],
 
     "hooks": {
+        "faq.lists": [
+            "Osmium\\Services\\Faqs\\Models\\FaqHooks::lists"
+        ],
+        "faq.items": [
+            "Osmium\\Services\\Faqs\\Models\\FaqHooks::items"
+        ],
         "mcp.tools": [
             "Osmium\\Services\\Faqs\\Models\\FaqMcp::tools"
         ]
