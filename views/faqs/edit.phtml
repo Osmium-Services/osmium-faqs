@@ -1,7 +1,7 @@
 <?php $faqList = $admin['faqList']; ?>
 <div class="d-flex justify-content-between align-items-center py-3 mb-4">
     <h4 class="mb-0">
-        <span class="text-muted fw-light">Content / FAQs /</span> <?= $faqList['id'] ? 'Edit List' : 'New List' ?>
+        <span class="text-muted fw-light"><a href="<?= $adminUrl('faqs/') ?>">Frequently Asked Questions</a> /</span> <?= $faqList['id'] ? 'Edit List' : 'New List' ?>
     </h4>
     <a href="<?= $adminUrl('faqs/') ?>" class="btn btn-label-secondary">
         <i class="bx bx-arrow-back me-1"></i> All lists
