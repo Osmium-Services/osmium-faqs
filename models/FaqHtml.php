@@ -7,7 +7,7 @@ namespace Osmium\Services\Faqs\Models;
 /**
  * The only HTML an FAQ answer may hold: paragraphs, line breaks, bold, italic, lists and links. Everything
  * else is unwrapped (its text is kept) and scripts, styles and the like are removed with their content.
- * A link keeps only its address, and only if it is a site path, http(s) or mailto. Pure.
+ * A link keeps only its address, and only if it is a site path, http(s), mailto or tel. Pure.
  */
 class FaqHtml
 {
@@ -74,7 +74,7 @@ class FaqHtml
     }
 
     /**
-     * The address if it is safe to link to, else null: a site path, http(s) or mailto.
+     * The address if it is safe to link to, else null: a site path, http(s), mailto or tel.
      */
     public static function safeUrl(string $url): ?string
     {
@@ -82,7 +82,7 @@ class FaqHtml
         if ($trimmed === '' || \preg_match('/[\x00-\x1f\x7f\s]/', $trimmed) === 1) return null;
 
         $isSitePath = \str_starts_with($trimmed, '/') && !\str_starts_with($trimmed, '//');
-        $isAllowedScheme = \preg_match('#^(https?://|mailto:)\S+#i', $trimmed) === 1;
+        $isAllowedScheme = \preg_match('#^(https?://|mailto:|tel:)\S+#i', $trimmed) === 1;
 
         return $isSitePath || $isAllowedScheme ? $trimmed : null;
     }

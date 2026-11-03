@@ -41,6 +41,14 @@ final class FaqHtmlTest extends TestCase
         $this->assertSame('<p><a href="https://example.com/a?b=1&amp;c=2" rel="noopener noreferrer">x</a></p>', $out);
     }
 
+    public function test_a_phone_link_is_kept(): void
+    {
+        $out = FaqHtml::clean('<p>Call <a href="tel:+441684273344">01684 273344</a></p>');
+
+        $this->assertStringContainsString('<a href="tel:+441684273344"', $out);
+        $this->assertStringContainsString('>01684 273344</a>', $out);
+    }
+
     /**
      * @dataProvider unsafeAddresses
      */
