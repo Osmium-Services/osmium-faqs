@@ -164,10 +164,11 @@ class FaqsController extends AdminController
             $keptIds[] = $this->saveItem(model: $model, listId: $listId, position: $position, item: $item);
         }
 
-        foreach ($existingIds as $existingId) {
-            $isKept = \in_array($existingId, $keptIds, true);
-            if (!$isKept) $model->delete(id: $existingId, listId: $listId);
-        }
+        $droppedIds = \array_diff($existingIds, $keptIds);
+        $notAdmin = !$this->isAdmin();
+        if ($droppedIds !== [] && $notAdmin) throw new \RuntimeException('Only an administrator can remove questions from a list'); // Removing one deletes it for good
+
+        foreach ($droppedIds as $droppedId) $model->delete(id: $droppedId, listId: $listId);
     }
 
     private function saveItem(FaqItem $model, int $listId, int $position, array $item): int
