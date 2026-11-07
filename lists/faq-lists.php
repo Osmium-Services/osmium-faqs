@@ -41,6 +41,7 @@ return [
         'endpoint' => 'faqs/action/',
         'emptyText' => 'No FAQ lists yet. Use New List to create the first.',
         'order' => null, // keep the server's name order until a header is clicked
+        'grid' => require __DIR__ . '/../grids/faq-lists.php',
         'columns' => [
             [
                 'key' => 'name',
@@ -51,7 +52,7 @@ return [
                 'sub' => ['key' => 'slug', 'style' => 'plain'],
             ],
             ['key' => 'count_label', 'label' => 'Questions', 'type' => 'text', 'nowrap' => true, 'sortKey' => 'item_count'],
-            ['key' => 'date_label', 'label' => 'Updated', 'type' => 'text', 'nowrap' => true, 'sortKey' => 'date_sort'],
+            ['key' => 'date_label', 'label' => 'Updated', 'type' => 'text', 'nowrap' => true, 'sortKey' => 'date_sort', 'hideBelow' => 'md'],
         ],
         'actions' => [
             ['label' => 'Edit', 'icon' => 'bx-edit-alt', 'url' => '{edit_url}'],
