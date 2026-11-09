@@ -1,7 +1,7 @@
 # Osmium FAQs service
 
 Named lists of questions and answers managed in admin, for a theme to show anywhere, with `FAQPage` structured data for
-search engines. Repo `Osmium-Services/osmium-faqs`, id `osmium-faqs` (was `faqs` in v1.0.0 and v1.0.1), v1.5.1<!--v:osmium-faqs-->, category
+search engines. Repo `Osmium-Services/osmium-faqs`, id `osmium-faqs` (was `faqs` in v1.0.0 and v1.0.1), v1.8.7<!--v:osmium-faqs-->, category
 content.
 
 ## What it does
