@@ -16,7 +16,8 @@ use Osmium\Services\Faqs\Models\FaqText;
  *
  * Routes:
  *   - index()  → /admin/faqs/
- *   - edit()   → /admin/faqs/edit/?id=N   (no id: a new list)
+ *   - add()    → /admin/faqs/add/
+ *   - edit()   → /admin/faqs/edit/?id=N
  *   - action() → /admin/faqs/action/      (save, delete, restore, permanently_delete)
  */
 class FaqsController extends AdminController
@@ -37,14 +38,27 @@ class FaqsController extends AdminController
         $this->setView('faqs/index.phtml');
     }
 
+    public function add(): void
+    {
+        $this->osmium->clearStashedQuerystring();
+        $this->prepareFormData(id: 0, list: null);
+        $this->setView('faqs/add.phtml');
+    }
+
     public function edit(): void
     {
         $id = (int) $this->osmium->getStashedParam(key: 'id', default: 0); // Core moves query params out of $_GET
-        $this->osmium->clearStashedQuerystring(); // Or a later "New List" would reuse this id
+        $this->osmium->clearStashedQuerystring();
         $list = $id ? (new FaqList($this->osmium->dataSource))->getById($id) : null;
-        $isMissing = $id && (!$list || $list['deleted_at'] !== null);
+        $isMissing = !$list || $list['deleted_at'] !== null;
         if ($isMissing) $this->redirect('faqs/');
 
+        $this->prepareFormData(id: $id, list: $list);
+        $this->setView('faqs/edit.phtml');
+    }
+
+    private function prepareFormData(int $id, ?array $list): void
+    {
         $items = $id ? (new FaqItem($this->osmium->dataSource))->forList($id) : [];
 
         $this->data['admin']['faqList'] = [
@@ -54,8 +68,6 @@ class FaqsController extends AdminController
         ];
         $this->data['admin']['faqItems'] = \array_map($this->formatItem(...), $items);
         $this->data['admin']['showSavedMessage'] = $this->consumeSavedFlag();
-
-        $this->setView('faqs/edit.phtml');
     }
 
     private function consumeSavedFlag(): bool

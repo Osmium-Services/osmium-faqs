@@ -56,6 +56,12 @@
                 "method": "index",
                 "title": "Osmium Frequently Asked Questions"
             },
+            "admin/faqs/add": {
+                "controller": "controllers/FaqsController.php",
+                "class": "Osmium\\Services\\Faqs\\Controllers\\FaqsController",
+                "method": "add",
+                "title": "New List"
+            },
             "admin/faqs/edit": {
                 "controller": "controllers/FaqsController.php",
                 "class": "Osmium\\Services\\Faqs\\Controllers\\FaqsController",
