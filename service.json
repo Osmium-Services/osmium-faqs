@@ -1,7 +1,7 @@
 {
     "id": "osmium-faqs",
     "name": "Osmium FAQs",
-    "version": "1.8.8",
+    "version": "1.9.0",
     "description": "Named lists of questions and answers managed in admin, for a theme to show anywhere, with FAQPage schema for search engines",
     "category": "content",
     "author": {
@@ -39,10 +39,12 @@
             "items": [
                 {
                     "id": "faqs",
-                    "label": "Osmium FAQs",
+                    "label": "FAQs",
                     "icon": "bx bx-help-circle",
                     "color": "#28a745",
-                    "placement": "top",
+                    "placement": "group",
+                    "group": "content",
+                    "order": 30,
                     "route": "admin/faqs",
                     "activePattern": "admin/faqs*",
                     "role": null
