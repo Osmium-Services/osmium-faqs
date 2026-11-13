@@ -41,6 +41,7 @@ final class FaqAdminBarTest extends TestCase
         $this->assertSame('Edit FAQs', $links[0]['label']);
         $this->assertSame('bx-help-circle', $links[0]['icon']);
         $this->assertTrue($links[0]['primary']);
+        $this->assertSame(80, $links[0]['order']); // A supporting link: after the page's main one (a product's, say)
     }
 
     public function test_other_or_malformed_contexts_get_no_links(): void

@@ -35,6 +35,6 @@ class FaqAdminBar
         $isList = \preg_match('/^faq-list:(\d+)$/', $context, $match) === 1;
         if (!$isList) return null;
 
-        return [['label' => 'Edit FAQs', 'icon' => 'bx-help-circle', 'path' => 'faqs/edit/?id=' . (int)$match[1], 'primary' => true]];
+        return [['label' => 'Edit FAQs', 'icon' => 'bx-help-circle', 'path' => 'faqs/edit/?id=' . (int)$match[1], 'primary' => true, 'order' => 80]];
     }
 }
