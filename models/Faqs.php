@@ -18,8 +18,23 @@ use Osmium\Core\Library\OsmiumPDO;
  */
 class Faqs
 {
+    /** @var int|null id of the first list this request printed, for the staff bar's "Edit FAQs" link */
+    private static ?int $firstShownListId = null;
+
     public function __construct(private OsmiumPDO $database)
     {
+    }
+
+    /** The list this request showed first (any theme or service calling items()), or null when none was shown. */
+    public static function firstShownListId(): ?int
+    {
+        return self::$firstShownListId;
+    }
+
+    /** For tests: forget what was shown. */
+    public static function forgetShown(): void
+    {
+        self::$firstShownListId = null;
     }
 
     /**
@@ -29,6 +44,8 @@ class Faqs
     {
         $list = (new FaqList($this->database))->findBySlug($slug);
         if (!$list) return [];
+
+        self::$firstShownListId ??= (int) $list['id'];
 
         $items = [];
         foreach ((new FaqItem($this->database))->publishedForList((int) $list['id']) as $row) {

@@ -28,6 +28,12 @@
         ],
         "mcp.tools": [
             "Osmium\\Services\\Faqs\\Models\\FaqMcp::tools"
+        ],
+        "adminbar.context": [
+            "Osmium\\Services\\Faqs\\Models\\FaqAdminBar::context"
+        ],
+        "adminbar.links": [
+            "Osmium\\Services\\Faqs\\Models\\FaqAdminBar::links"
         ]
     },
 
