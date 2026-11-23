@@ -70,6 +70,7 @@
         container.appendChild(block);
         initEditor(block);
         refreshEmptyNote();
+        trackChanges();
         block.querySelector('[data-field="question"]').focus();
     });
 
@@ -81,6 +82,7 @@
             $(block.querySelector('[data-field="answer"]')).summernote('destroy');
             block.remove();
             refreshEmptyNote();
+            trackChanges();
             return;
         }
 
@@ -92,6 +94,7 @@
         if (move.dataset.move === 'down' && block.nextElementSibling) {
             container.insertBefore(block.nextElementSibling, block);
         }
+        trackChanges();
     });
 
     let slugEdited = slugInput.value !== '';
@@ -100,6 +103,20 @@
         if (slugEdited) return;
         slugInput.value = nameInput.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
     });
+
+    // The admin's unsaved-changes warning reads window.hasUnsavedChanges. Its form tracker compares named fields and
+    // this form has none, so compare what Save would send against what the page loaded with.
+    function formValues() {
+        return { name: nameInput.value, slug: slugInput.value, items: readItems() };
+    }
+
+    const loadedValues = JSON.stringify(formValues());
+    function trackChanges() {
+        window.hasUnsavedChanges = JSON.stringify(formValues()) !== loadedValues;
+    }
+    form.addEventListener('input', trackChanges);
+    form.addEventListener('change', trackChanges);
+    $(container).on('summernote.change', trackChanges);
 
     form.addEventListener('submit', async function (event) {
         event.preventDefault();
@@ -128,6 +145,7 @@
 
             // Go to the list by id rather than reloading: core strips the query string from this page's address
             // (it is stashed in the session and cleared on load), so a reload would open a blank "New List"
+            window.hasUnsavedChanges = false;
             window.location.href = config.editUrl + '?id=' + data.id;
         } catch (error) {
             console.error('Save error:', error);
