@@ -34,6 +34,7 @@ class FaqsController extends AdminController
         $this->data['admin']['recentFaqLists'] = \array_map($this->formatRecentList(...), $lists->listRecent());
         $this->data['admin']['deletedFaqLists'] = \array_map($this->formatList(...), $lists->listDeleted());
         $this->data['admin']['lists'] = require __DIR__ . '/../lists/faq-lists.php';
+        $this->data['admin']['activeEditors'] = $this->activeEditors(self::RECORD_TYPE);
 
         $this->setView('faqs/index.phtml');
     }
@@ -53,6 +54,7 @@ class FaqsController extends AdminController
         $isMissing = !$list || $list['deleted_at'] !== null;
         if ($isMissing) $this->redirect('faqs/');
 
+        $this->openRecord(recordType: self::RECORD_TYPE, recordId: $id);
         $this->prepareFormData(id: $id, list: $list);
         $this->setView('faqs/edit.phtml');
     }
@@ -86,10 +88,13 @@ class FaqsController extends AdminController
         if (!$isPost) $this->admin->jsonError('Method not allowed');
 
         $input = $this->admin->auth->getJsonInput();
+        $action = $input['action'] ?? '';
+
+        $this->handlePresence(action: $action, input: $input, recordType: self::RECORD_TYPE);
+
         $csrfValid = $this->admin->auth->validateCsrfJson($input);
         if (!$csrfValid) $this->admin->jsonError('Invalid request token. Please refresh and try again.');
 
-        $action = $input['action'] ?? '';
         $id = (int) ($input['id'] ?? 0);
 
         try {

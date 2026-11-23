@@ -39,6 +39,7 @@ return [
         'title' => 'FAQ Lists',
         'noun' => ['list', 'lists'],
         'endpoint' => 'faqs/action/',
+        'presence' => 'faq_list',
         'emptyText' => 'No FAQ lists yet. Use New List to create the first.',
         'order' => null, // keep the server's name order until a header is clicked
         'grid' => require __DIR__ . '/../grids/faq-lists.php',
