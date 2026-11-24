@@ -1,6 +1,7 @@
 ---
 title: Add a list of FAQs
 tags: faq, questions, answers, list, help page
+page: admin/faqs, admin/faqs/add, admin/faqs/edit*
 ---
 
 A FAQ list is a named set of questions and answers. Your site's design decides where each list appears.
